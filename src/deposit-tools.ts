@@ -128,7 +128,7 @@ export function createDepositMcpServer(options: { userId: string; entitled: bool
     "record_deposit",
     "Record the deposit amount in whole minor units and the deposit date as YYYY-MM-DD. This does not waive the deposit and does not mark it paid. After the schedule is approved, a different amount or date is refused until an accepted schedule change.",
     { scheduleId: id, amountMinor: minor, dueOn: day },
-    write,
+    { ...write, destructiveHint: true },
     async (args) => options.store.recordDeposit(options.userId, {
       scheduleId: args.scheduleId as string,
       amountMinor: args.amountMinor as number,
@@ -182,7 +182,7 @@ export function createDepositMcpServer(options: { userId: string; entitled: bool
     "write_client_script",
     "Record what the assistant may tell the client about the deposit and payment dates. After the schedule is approved, different wording is refused until an accepted revise_client_script suggestion. The assistant must not go beyond this script and the facts in read_schedule.",
     { scheduleId: id, script },
-    write,
+    { ...write, destructiveHint: true },
     async (args) => options.store.writeClientScript(options.userId, {
       scheduleId: args.scheduleId as string,
       script: args.script as string
@@ -193,7 +193,7 @@ export function createDepositMcpServer(options: { userId: string; entitled: bool
     "commit_schedule",
     "Mark the current draft as the approved schedule. Pass confirmed true only after the freelancer explicitly approves the deposit, the later payment dates, and what the assistant may tell the client.",
     { scheduleId: id, confirmed: z.literal(true) },
-    { ...write, idempotentHint: true },
+    { ...write, destructiveHint: true, idempotentHint: true },
     async ({ scheduleId }) => options.store.commitSchedule(options.userId, scheduleId as string)
   );
 

@@ -3,7 +3,7 @@
   "name": "io.github.LAHutchins91/deposit",
   "title": "Deposit",
   "description": "Approved freelance deposit and payment dates for AI assistants, over MCP.",
-  "version": "1.0.1",
+  "version": "0.1.0",
   "websiteUrl": "https://deposit-continuity2.vercel.app",
   "repository": {
     "url": "https://github.com/LAHutchins91/deposit-mcp",

@@ -2,18 +2,16 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.LAHutchins91/deposit",
   "title": "Deposit",
-  "description": "Approved freelance deposit and later payment dates, plus what an assistant may tell the client, shared with AI assistants over MCP.",
-  "version": "0.1.0",
+  "description": "Approved freelance deposit and payment dates for AI assistants, over MCP.",
+  "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/LAHutchins91/deposit-mcp",
+    "source": "github"
+  },
   "remotes": [
     {
       "type": "streamable-http",
       "url": "https://deposit-continuity2.vercel.app/mcp"
-    }
-  ],
-  "icons": [
-    {
-      "src": "https://raw.githubusercontent.com/LAHutchins91/deposit-mcp/main/logo.jpg",
-      "mimeType": "image/jpeg"
     }
   ]
 }

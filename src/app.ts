@@ -4,7 +4,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 import { PRO_REQUIRED, PUBLIC_MCP_METHODS, SIGN_IN_REQUIRED, hasDepositAccess } from "./access.js";
 import { checkoutForm, depositUserId, readStripeEvent, stripePost, subscriptionPatch } from "./billing.js";
-import { createFileDepositStore, defaultDepositDataPath, type DepositStore } from "./deposit-store.js";
+import { resolveDepositStore, type DepositStore } from "./deposit-store.js";
 import { createDepositMcpServer } from "./deposit-tools.js";
 import { MCP_CORS_HEADERS, ensureStreamableHttpAccept, mcpBrowserOriginAllowed } from "./mcp-clients.js";
 import { validateMcpClaims } from "./mcp-claims.js";
@@ -70,7 +70,7 @@ export function defaultDeps(): DepositDeps {
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
     stripePriceMonthly: process.env.STRIPE_PRICE_MONTHLY ?? "",
     stripePriceYearly: process.env.STRIPE_PRICE_YEARLY ?? "",
-    store: createFileDepositStore(process.env.DEPOSIT_DATA_PATH ?? defaultDepositDataPath()),
+    store: resolveDepositStore(),
     authenticate: (req) => authenticateWithSupabase(req, supabaseUrl, supabaseAnonKey),
     validateClaims: (token, userId) => validateMcpClaims(token, userId, `${supabaseUrl}/auth/v1`, `${appBaseUrl}/mcp`)
   };

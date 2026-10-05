@@ -13,7 +13,7 @@ describe("packaging", () => {
     expect(server.name).toBe("io.github.LAHutchins91/deposit");
     expect(server.version).toBe(DEPOSIT_VERSION);
     expect(server.websiteUrl).toBeUndefined();
-    expect(server.remotes).toEqual([{ type: "streamable-http", url: "http://127.0.0.1:3000/mcp" }]);
+    expect(server.remotes).toEqual([{ type: "streamable-http", url: "https://deposit-continuity2.vercel.app/mcp" }]);
     const docker = read("Dockerfile");
     expect(docker).toContain("FROM node:22-alpine AS build");
     expect(docker).toContain("USER node");

@@ -1,10 +1,9 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { createApp, defaultDeps } from "./app.js";
+import app, { appDeps as deps } from "./app.js";
 import { createDepositMcpServer } from "./deposit-tools.js";
 import { useStdioTransport } from "./transport.js";
 
-const deps = defaultDeps();
-export const app = createApp(deps);
+export { app };
 export default app;
 export { useStdioTransport };
 

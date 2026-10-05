@@ -253,23 +253,28 @@ function createSupabaseBackend(opts: { supabaseUrl: string; serviceRoleKey: stri
   const headers = {
     apikey: opts.serviceRoleKey,
     Authorization: `Bearer ${opts.serviceRoleKey}`,
-    "Content-Type": "application/json",
-    Prefer: "return=representation",
-    "Accept-Profile": "deposit_private",
-    "Content-Profile": "deposit_private"
+    "Content-Type": "application/json"
   };
-  const table = `${base}/rest/v1/store`;
+  const loadUrl = `${base}/rest/v1/rpc/deposit_store_load`;
+  const saveUrl = `${base}/rest/v1/rpc/deposit_store_save`;
 
   async function loadRow(): Promise<{ doc: FileData; revision: number } | null> {
-    const response = await fetch(`${table}?id=eq.main&select=doc,revision`, { headers });
+    const response = await fetch(loadUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ p_id: "main" })
+    });
     if (!response.ok) throw new DepositUserError("Deposit data could not be read.");
-    const rows = (await response.json()) as Array<{ doc: FileData; revision: number }>;
-    if (!rows.length) return null;
-    const row = rows[0];
+    const payload = (await response.json()) as { doc?: FileData; revision?: number } | null;
+    if (!payload) return null;
+    if (!payload.doc || typeof payload.revision !== "number") {
+      throw new DepositUserError("Deposit data could not be read.");
+    }
+    const row = { doc: payload.doc, revision: Number(payload.revision) };
     if (!row.doc || row.doc.version !== 1 || !row.doc.profiles || !row.doc.schedules || !Array.isArray(row.doc.supportRequests)) {
       throw new DepositUserError("Deposit data could not be read.");
     }
-    return { doc: row.doc, revision: Number(row.revision) };
+    return row;
   }
 
   return {
@@ -286,30 +291,23 @@ function createSupabaseBackend(opts: { supabaseUrl: string; serviceRoleKey: stri
       const maxAttempts = 8;
       for (let attempt = 0; attempt < maxAttempts; attempt++) {
         const existing = await loadRow();
-        if (!existing) {
-          const response = await fetch(table, {
-            method: "POST",
-            headers: { ...headers, Prefer: "return=representation,resolution=ignore-duplicates" },
-            body: JSON.stringify({ id: "main", doc: data, revision: 1 })
-          });
-          if (!response.ok) throw new DepositUserError("Deposit data could not be saved.");
-          const rows = (await response.json()) as unknown[];
-          if (rows.length > 0) return;
-          continue;
-        }
-        const response = await fetch(`${table}?id=eq.main&revision=eq.${existing.revision}`, {
-          method: "PATCH",
+        const expected = existing ? existing.revision : 0;
+        const response = await fetch(saveUrl, {
+          method: "POST",
           headers,
-          body: JSON.stringify({ doc: data, revision: existing.revision + 1, updated_at: new Date().toISOString() })
+          body: JSON.stringify({ p_id: "main", p_doc: data, p_expected_revision: expected })
         });
         if (!response.ok) throw new DepositUserError("Deposit data could not be saved.");
-        const rows = (await response.json()) as unknown[];
-        if (rows.length > 0) return;
+        const result = (await response.json()) as { ok?: boolean; conflict?: boolean; revision?: number };
+        if (result && result.ok) return;
+        if (result && result.conflict) continue;
+        throw new DepositUserError("Deposit data could not be saved.");
       }
       throw new DepositUserError("Deposit data could not be saved.");
     }
   };
 }
+
 
 
 function nowIso(): string {

@@ -1,4 +1,4 @@
-import { createServer, type Server } from "node:http";
+import http, { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import crypto from "node:crypto";
 import { mkdtemp } from "node:fs/promises";
@@ -63,6 +63,35 @@ function mcpHeaders(origin?: string): Record<string, string> {
   };
 }
 
+function postMcp(baseUrl: string, accept: string | undefined, body: unknown) {
+  const payload = JSON.stringify(body);
+  const url = new URL(baseUrl);
+  return new Promise<{ status: number; text: string; wwwAuthenticate?: string }>((resolve, reject) => {
+    const requestHeaders: http.OutgoingHttpHeaders = {
+      "content-type": "application/json",
+      "content-length": Buffer.byteLength(payload)
+    };
+    if (accept !== undefined) requestHeaders.accept = accept;
+    const req = http.request(
+      { hostname: url.hostname, port: url.port, path: "/mcp", method: "POST", headers: requestHeaders },
+      (res) => {
+        const chunks: Buffer[] = [];
+        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        res.on("end", () => {
+          const wwwAuthenticate = res.headers["www-authenticate"];
+          resolve({
+            status: res.statusCode ?? 0,
+            text: Buffer.concat(chunks).toString("utf8"),
+            wwwAuthenticate: typeof wwwAuthenticate === "string" ? wwwAuthenticate : undefined
+          });
+        });
+      }
+    );
+    req.on("error", reject);
+    req.end(payload);
+  });
+}
+
 describe("HTTP MCP", () => {
   it("default-exports the Express app Vercel invokes", async () => {
     expect(typeof app).toBe("function");
@@ -88,6 +117,37 @@ describe("HTTP MCP", () => {
     expect(response.status).toBe(200);
     const body = await response.json() as { result: { tools: Array<{ name: string }> } };
     expect(body.result.tools.map((tool) => tool.name).sort()).toEqual([...DEPOSIT_TOOL_NAMES].sort());
+  });
+
+  it.each([
+    ["application/json"],
+    ["*/*"],
+    ["text/event-stream"],
+    [undefined],
+    ["application/json, text/event-stream"]
+  ] as const)("lists tools when Accept is %s", async (accept) => {
+    const options = await deps();
+    const url = await listen(createApp(options));
+    const response = await postMcp(url, accept, { jsonrpc: "2.0", id: 11, method: "tools/list" });
+    expect(response.status).toBe(200);
+    const body = JSON.parse(response.text) as { result?: { tools?: Array<{ name: string }> }; error?: { message?: string } };
+    expect(body.error?.message ?? "").not.toMatch(/Not Acceptable/);
+    expect(body.result?.tools?.map((tool) => tool.name).sort()).toEqual([...DEPOSIT_TOOL_NAMES].sort());
+  });
+
+  it("still requires OAuth for tools/call when Accept is only application/json", async () => {
+    const options = await deps("none");
+    const url = await listen(createApp(options));
+    const response = await postMcp(url, "application/json", {
+      jsonrpc: "2.0",
+      id: 12,
+      method: "tools/call",
+      params: { name: "list_schedules", arguments: {} }
+    });
+    expect(response.status).toBe(401);
+    expect(response.wwwAuthenticate).toContain("/.well-known/oauth-protected-resource/mcp");
+    const body = JSON.parse(response.text) as { error?: string };
+    expect(body.error).toBe(SIGN_IN_REQUIRED);
   });
 
   it("requires OAuth and an active trial before a tool call", async () => {

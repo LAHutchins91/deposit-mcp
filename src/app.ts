@@ -6,7 +6,7 @@ import { PRO_REQUIRED, PUBLIC_MCP_METHODS, SIGN_IN_REQUIRED, hasDepositAccess } 
 import { checkoutForm, depositUserId, readStripeEvent, stripePost, subscriptionPatch } from "./billing.js";
 import { createFileDepositStore, defaultDepositDataPath, type DepositStore } from "./deposit-store.js";
 import { createDepositMcpServer } from "./deposit-tools.js";
-import { MCP_CORS_HEADERS, mcpBrowserOriginAllowed } from "./mcp-clients.js";
+import { MCP_CORS_HEADERS, ensureStreamableHttpAccept, mcpBrowserOriginAllowed } from "./mcp-clients.js";
 import { validateMcpClaims } from "./mcp-claims.js";
 import { installPluginAuth } from "./plugin-auth.js";
 import { installPublicPages } from "./public-pages.js";
@@ -219,7 +219,7 @@ export function createApp(deps: DepositDeps): Express {
     res.status(204).end();
   });
 
-  app.post("/mcp", async (req, res) => {
+  app.post("/mcp", ensureStreamableHttpAccept, async (req, res) => {
     if (!guardMcpOrigin(req, res)) return;
     if (!allowPublic(`mcp:${req.ip}`, 300, 60_000)) {
       return res.status(429).set("Retry-After", "60").json({ error: "Too many requests. Retry in one minute." });

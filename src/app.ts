@@ -120,6 +120,11 @@ export function createApp(deps: DepositDeps): Express {
 
   app.use(express.json({ limit: "128kb" }));
   installPublicPages(app, deps.appBaseUrl, deps.supabaseUrl, deps.supabaseAnonKey);
+  app.get("/.well-known/openai-apps-challenge", (_req, res) => {
+    const token = process.env.OPENAI_APPS_CHALLENGE;
+    if (!token) return res.status(404).type("text").send("Verification is not configured.");
+    res.type("text").send(token);
+  });
   installPluginAuth(app, deps.appBaseUrl, deps.supabaseUrl, deps.supabaseAnonKey);
 
   app.get("/health", (_req, res) => {

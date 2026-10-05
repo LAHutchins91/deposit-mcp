@@ -7,7 +7,13 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "http://127.0.0.1:3000/mcp"
+      "url": "https://deposit-continuity2.vercel.app/mcp"
+    }
+  ],
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/LAHutchins91/deposit-mcp/main/logo.jpg",
+      "mimeType": "image/jpeg"
     }
   ]
 }

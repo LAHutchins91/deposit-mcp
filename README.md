@@ -55,7 +55,7 @@ claude mcp add --transport http deposit http://127.0.0.1:3000/mcp
 
 Do not pass an Authorization header. Other clients use the same address, choose OAuth, and leave client id and secret empty. Steps for ChatGPT, Claude, Gemini, Grok, and Cursor are on the connect page at `/connect`.
 
-Registry metadata for this server is in `server.json` (`io.github.LAHutchins91/deposit`). The remote URL there is the local listener, not a deployed host.
+Registry metadata for this server is in `server.json` (`io.github.LAHutchins91/deposit`). The remote URL there is `https://deposit-continuity2.vercel.app/mcp`.
 
 ## Run
 

@@ -3,7 +3,7 @@ export const TRIAL_PERIOD_DAYS = 14;
 
 export const SIGN_IN_REQUIRED = "Sign in to Deposit to use deposit tools.";
 
-export const PRO_REQUIRED = "A Deposit Pro subscription or active trial is required.";
+export const PRO_REQUIRED = "This Deposit account does not currently include access to Deposit tools. Check that you connected the intended account.";
 
 export const PUBLIC_MCP_METHODS = new Set([
   "initialize",

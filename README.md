@@ -82,3 +82,7 @@ OAuth uses the same idea as a Supabase authorization server with dynamic client 
 - `OPENAI_APPS_CHALLENGE` (optional). When set, `GET /.well-known/openai-apps-challenge` returns that token as plain text for OpenAI domain verification. When unset, the route responds with `404` and the text `Verification is not configured.`
 
 Tool calls other than discovery require a signed-in account whose subscription status is `active` or `trialing`.
+
+---
+
+More from Ouroboros: https://ouroborosapps.com

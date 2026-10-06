@@ -13,6 +13,11 @@ export function page(title: string, body: string): string {
   return shell(title, body);
 }
 
+/** The access page links only to connection management and support, never to the plans page. */
+function accessPage(title: string, body: string): string {
+  return shell(title, body).replace('<a href="/">Deposit</a>', "<span>Deposit</span>");
+}
+
 function jsonForScript(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
@@ -113,7 +118,7 @@ ${configured ? `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@
 export function installPublicPages(app: Express, baseUrl: string, supabaseUrl: string, supabaseAnonKey: string) {
   app.get("/icon.svg", (_req, res) => res.type("svg").send(logo));
   app.get("/connect", (_req, res) => res.type("html").send(page("Connect an assistant", connectPageBody(baseUrl))));
-  app.get("/access", (_req, res) => res.type("html").send(page("Deposit access", `<p>Deposit tools are available with an active Pro subscription or trial. This connection has no entitlement at present. It cannot change your plan or start a purchase.</p><p><a href="/">Review the account</a> or <a href="/support">contact support</a> if access looks incorrect.</p>`)));
+  app.get("/access", (_req, res) => res.type("html").send(accessPage("Deposit access", `<p>Deposit tools are available to Deposit accounts with active access. The account on this connection does not currently have access to deposit tools. Nothing on this page can change your account or start a purchase.</p><p>Verify that you connected the intended account. <a href="/connections">Manage the connection</a> or <a href="/support">contact support</a> if access looks incorrect.</p>`)));
   app.get("/privacy", (_req, res) => res.type("html").send(page("Privacy policy", `<p>Effective October 5, 2026. Deposit is operated by Ouroboros Apps (Lawrence Hutchins). Contact the operator through the <a href="/support">support form</a>.</p>
 <h2>Information we process</h2>
 <p>We process account identifiers and the account email provided at sign-in, subscription status and billing references, and the freelance records you intentionally save: deposit schedules, later payments, and the client wording an assistant may tell the client. Support requests contain the reply email and message you provide.</p>

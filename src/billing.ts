@@ -29,6 +29,7 @@ export function checkoutForm(input: {
 }): URLSearchParams {
   const params = new URLSearchParams();
   params.set("mode", "subscription");
+  params.set("automatic_tax[enabled]", "true");
   params.set("line_items[0][price]", input.priceId);
   params.set("line_items[0][quantity]", "1");
   params.set("client_reference_id", input.userId);
@@ -38,8 +39,10 @@ export function checkoutForm(input: {
   params.set("payment_method_collection", "always");
   params.set("success_url", `${input.appBaseUrl}/?checkout=success`);
   params.set("cancel_url", `${input.appBaseUrl}/?checkout=cancelled`);
-  if (input.customerId) params.set("customer", input.customerId);
-  else if (input.email) params.set("customer_email", input.email);
+  if (input.customerId) {
+    params.set("customer", input.customerId);
+    params.set("customer_update[address]", "auto");
+  } else if (input.email) params.set("customer_email", input.email);
   return params;
 }
 

@@ -1,0 +1,20 @@
+{
+  "name": "deposit",
+  "displayName": "Deposit by Ouroboros Apps",
+  "version": "1.0.3",
+  "description": "Deposit keeps a freelance deposit and payment schedule inside the terms you already approved.",
+  "author": {
+    "name": "Ouroboros"
+  },
+  "homepage": "https://ouroborosapps.com",
+  "repository": "https://github.com/LAHutchins91/deposit-mcp",
+  "license": "MIT",
+  "keywords": [
+    "freelance",
+    "deposits",
+    "payment schedule",
+    "mcp"
+  ],
+  "logo": "logo.jpg",
+  "publisher": "Ouroboros"
+}

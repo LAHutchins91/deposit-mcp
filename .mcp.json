@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "deposit": {
+      "url": "https://deposit-continuity2.vercel.app/mcp"
+    }
+  }
+}

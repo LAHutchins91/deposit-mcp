@@ -8,7 +8,14 @@ Sign in with your Deposit account when the assistant opens OAuth. Do not paste a
 
 Deposit tools need Pro or an active trial. A new subscription includes a 14-day trial. This page does not list a price. Checkout shows the billing interval and payment terms. Amounts stored on a schedule are the freelancer's figures, in whole minor units of the schedule currency. They are not a product price.
 
-There is no hosted production domain in this repository. Run the server yourself and use the base URL you configure. The default MCP address is `http://127.0.0.1:3000/mcp`.
+To self-host, run the server and use the base URL you configure. The default MCP address is `http://127.0.0.1:3000/mcp`.
+
+## Hosted server
+
+- MCP server URL: `https://deposit-continuity2.vercel.app/mcp` (Streamable HTTP, OAuth sign-in)
+- Docs: https://ouroborosapps.com/docs/deposit
+- Status: early access. Paste the URL into Claude, Cursor, Grok, or ChatGPT developer mode.
+- Registry name: `io.github.LAHutchins91/deposit`
 
 ## What the assistant can do
 

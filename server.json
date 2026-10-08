@@ -2,9 +2,9 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.LAHutchins91/deposit",
   "title": "Deposit",
-  "description": "Approved freelance deposit and payment dates for AI assistants, over MCP.",
-  "version": "0.1.0",
-  "websiteUrl": "https://deposit-continuity2.vercel.app",
+  "description": "Approved freelance deposit and payment schedule for AI assistants.",
+  "version": "1.0.2",
+  "websiteUrl": "https://ouroborosapps.com/docs/deposit",
   "repository": {
     "url": "https://github.com/LAHutchins91/deposit-mcp",
     "source": "github"

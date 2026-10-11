@@ -11,6 +11,7 @@ import { validateMcpClaims } from "./mcp-claims.js";
 import { installPluginAuth } from "./plugin-auth.js";
 import { installPublicPages } from "./public-pages.js";
 import { DEPOSIT_VERSION } from "./version.js";
+import { isOwnCheckout, isOwnSubscription } from "./stripe-scope.js";
 
 export type AuthUser = { id: string; email?: string };
 
@@ -103,13 +104,14 @@ export function createApp(deps: DepositDeps): Express {
       const event = readStripeEvent(req.body, signature, deps.stripeWebhookSecret);
       const object = event.data.object;
       const userId = depositUserId(object);
-      if (userId && event.type === "checkout.session.completed") {
+      // Every app on the shared Stripe account receives every event; act only on our own.
+      if (userId && event.type === "checkout.session.completed" && isOwnCheckout(object, deps.appBaseUrl)) {
         await deps.store.updateProfile(userId, {
           stripeCustomerId: typeof object.customer === "string" ? object.customer : null,
           stripeSubscriptionId: typeof object.subscription === "string" ? object.subscription : null
         });
       }
-      if (userId && ["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"].includes(event.type)) {
+      if (userId && ["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"].includes(event.type) && isOwnSubscription(object, [deps.stripePriceMonthly, deps.stripePriceYearly])) {
         await deps.store.updateProfile(userId, subscriptionPatch(object));
       }
       res.json({ received: true });

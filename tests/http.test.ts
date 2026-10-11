@@ -210,6 +210,7 @@ describe("HTTP MCP", () => {
           customer: "cus_1",
           status: "trialing",
           cancel_at_period_end: false,
+          items: { data: [{ price: { id: options.stripePriceMonthly } }] },
           metadata: { deposit_user_id: "user-1" }
         }
       }
@@ -223,6 +224,24 @@ describe("HTTP MCP", () => {
     });
     expect(webhook.status).toBe(200);
     expect((await options.store.getProfile("user-1")).subscriptionStatus).toBe("trialing");
+
+    // Every app on the shared Stripe account receives every event; other apps' events must not touch this profile.
+    const signed = async (event: unknown) => {
+      const body = JSON.stringify(event);
+      const t = Math.floor(Date.now() / 1000);
+      const sig = crypto.createHmac("sha256", options.stripeWebhookSecret).update(`${t}.${body}`).digest("hex");
+      const response = await fetch(`${url}/billing/webhook`, { method: "POST", headers: { "content-type": "application/json", "stripe-signature": `t=${t},v1=${sig}` }, body });
+      expect(response.status).toBe(200);
+    };
+    await signed({ type: "customer.subscription.deleted", data: { object: { id: "sub_other", customer: "cus_other", status: "canceled", items: { data: [{ price: { id: "price_other_app" } }] }, metadata: { deposit_user_id: "user-1" } } } });
+    await signed({ type: "customer.subscription.deleted", data: { object: { id: "sub_mix", customer: "cus_other", status: "canceled", items: { data: [{ price: options.stripePriceMonthly }, { price: "price_other_app" }] }, metadata: { deposit_user_id: "user-1" } } } });
+    await signed({ type: "checkout.session.completed", data: { object: { client_reference_id: "user-1", customer: "cus_other", subscription: "sub_other", success_url: "https://other-app.vercel.app/?checkout=success", metadata: { supabase_user_id: "user-1" } } } });
+    const after = await options.store.getProfile("user-1");
+    expect(after.subscriptionStatus).toBe("trialing");
+    expect(after.stripeCustomerId).toBe("cus_1");
+    expect(after.stripeSubscriptionId).toBe("sub_1");
+    await signed({ type: "checkout.session.completed", data: { object: { client_reference_id: "user-1", customer: "cus_1", subscription: "sub_2", success_url: `${options.appBaseUrl}/?checkout=success`, metadata: { deposit_user_id: "user-1" } } } });
+    expect((await options.store.getProfile("user-1")).stripeSubscriptionId).toBe("sub_2");
 
     const health = await fetch(`${url}/health`);
     expect(await health.json()).toMatchObject({ ok: true, service: "deposit", oauthConfigured: true, billingConfigured: true });
